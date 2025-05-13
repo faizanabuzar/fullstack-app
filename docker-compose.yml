@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: myapp
+    ports:
+      - "3306:3306"
+    command: --port=3306
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d  # Mount the 'database' folder containing init.sql into the MySQL container
+    networks:
+      - my-network
+    healthcheck:                    # <--- Added healthcheck
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy  # <--- Start backend only after DB is healthy
+    networks:
+      - my-network
+  
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - my-network
+
+
+networks:
+  my-network:
+    driver: bridge
+

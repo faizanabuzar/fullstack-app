@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Frontend</title>
+</head>
+<body>
+  <h1>Users from Database</h1>
+  <ul id="user-list"></ul>
+
+  <script>
+    async function fetchUsers() {
+      try {
+        const response = await fetch('http://44.212.3.244:3000/users'); // USE PUBLIC IP
+        const users = await response.json();
+        const list = document.getElementById('user-list');
+        users.forEach(user => {
+          const item = document.createElement('li');
+          item.textContent = `${user.name} (${user.email})`;
+          list.appendChild(item);
+        });
+      } catch (err) {
+        console.error('Failed to fetch users', err);
+      }
+    }
+
+    fetchUsers();
+  </script>
+
+</body>
+</html>
+
